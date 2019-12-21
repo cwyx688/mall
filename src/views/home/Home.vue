@@ -10,7 +10,9 @@
     <tab-control
       :titles="['流行', '新款', '精选']"
       class="tab-control"
+      @itemClick="tabClick"
     ></tab-control>
+    <goods-list :goodsList="showGoodsList"></goods-list>
   </div>
 </template>
 
@@ -20,6 +22,7 @@ import HomeSwiper from "./childComps/HomeSwiper.vue";
 import RecommendView from "./childComps/RecommendView.vue";
 import Feature from "./childComps/FeatureView.vue";
 import TabControl from "components/content/tabControl/TabControl.vue";
+import GoodsList from "components/content/goods/GoodsList.vue";
 import { getHomeMultidata, getHomeGoods } from "network/home";
 
 export default {
@@ -28,7 +31,8 @@ export default {
     HomeSwiper,
     RecommendView,
     Feature,
-    TabControl
+    TabControl,
+    GoodsList
   },
   data() {
     return {
@@ -38,16 +42,18 @@ export default {
         pop: { page: 0, list: [] },
         new: { page: 0, list: [] },
         sell: { page: 0, list: [] }
-      }
+      },
+      currentType: 'pop'
     };
   },
   created() {
-    this.getHomeMultidata()
-    this.getHomeGoods('pop')
-    this.getHomeGoods('new')
-    this.getHomeGoods('sell')
+    this.getHomeMultidata();
+    this.getHomeGoods("pop");
+    this.getHomeGoods("new");
+    this.getHomeGoods("sell");
   },
   methods: {
+    // 网络请求方法
     getHomeMultidata() {
       getHomeMultidata().then(res => {
         this.banners = res.data.banner.list;
@@ -56,13 +62,32 @@ export default {
       });
     },
     getHomeGoods(type) {
-      const page = this.goods[type].page + 1
-      getHomeGoods(type, page).then(res=>{
-        this.goods[type].list.push(...res.data.list)
-        this.goods[type].page += 1
-      })
+      const page = this.goods[type].page + 1;
+      getHomeGoods(type, page).then(res => {
+        this.goods[type].list.push(...res.data.list);
+        this.goods[type].page += 1;
+      });
+    },
+    // 事件方法
+    tabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = "pop";
+          break;
+        case 1:
+          this.currentType = "new";
+          break;
+        case 2:
+          this.currentType = "sell";
+          break;
+      }
     }
-  }
+  },
+  computed: {
+      showGoodsList() {
+        return this.goods[this.currentType].list
+      }
+    },
 };
 </script>
 
@@ -82,5 +107,7 @@ export default {
 .tab-control {
   position: sticky;
   top: 44px;
+  background-color: #fff;
+  z-index: 6;
 }
 </style>
