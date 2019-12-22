@@ -4,6 +4,7 @@
       <div slot="center">购物街</div>
     </nav-bar>
 
+  <Scroll class="content" ref="scroll" :probe-type="3" @scroll="showControl" :pull-up-load="true" @pullingUp="moreLoad">
     <home-swiper :banners="banners"></home-swiper>
     <recommend-view :recommends="recommends"></recommend-view>
     <feature></feature>
@@ -13,16 +14,24 @@
       @itemClick="tabClick"
     ></tab-control>
     <goods-list :goodsList="showGoodsList"></goods-list>
+  </Scroll>
+
+  <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
 <script>
-import NavBar from "components/common/navbar/NavBar.vue";
+
 import HomeSwiper from "./childComps/HomeSwiper.vue";
 import RecommendView from "./childComps/RecommendView.vue";
 import Feature from "./childComps/FeatureView.vue";
+
+import NavBar from "components/common/navbar/NavBar.vue";
 import TabControl from "components/content/tabControl/TabControl.vue";
 import GoodsList from "components/content/goods/GoodsList.vue";
+import Scroll from 'components/common/scroll/Scroll.vue'
+import BackTop from 'components/content/backtop/BackTop.vue';
+
 import { getHomeMultidata, getHomeGoods } from "network/home";
 
 export default {
@@ -32,7 +41,9 @@ export default {
     RecommendView,
     Feature,
     TabControl,
-    GoodsList
+    GoodsList,
+    Scroll,
+    BackTop
   },
   data() {
     return {
@@ -43,7 +54,8 @@ export default {
         new: { page: 0, list: [] },
         sell: { page: 0, list: [] }
       },
-      currentType: 'pop'
+      currentType: 'pop',
+      isShowBackTop:false
     };
   },
   created() {
@@ -66,7 +78,9 @@ export default {
       getHomeGoods(type, page).then(res => {
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
+        this.$refs.scroll.finishPullUp()
       });
+      
     },
     // 事件方法
     tabClick(index) {
@@ -81,6 +95,17 @@ export default {
           this.currentType = "sell";
           break;
       }
+    },
+    backClick() {
+      // this.$refs.scroll.scroll.scrollTo(0,0,500)
+      this.$refs.scroll.scrollTo(0,0)
+    },
+    showControl(position) {
+      this.isShowBackTop = -position.y > 1000
+    },
+    moreLoad() {
+      this.getHomeGoods(this.currentType)
+      this.$refs.scroll.scroll.refresh()
     }
   },
   computed: {
@@ -102,7 +127,9 @@ export default {
   z-index: 1;
 }
 #home {
-  padding-top: 44px;
+  /* padding-top: 44px; */
+  height: 100vh;
+  position: relative;
 }
 .tab-control {
   position: sticky;
@@ -110,4 +137,17 @@ export default {
   background-color: #fff;
   z-index: 6;
 }
+.content {
+  position:absolute;
+  top:44px;
+  bottom:49px;
+  left:0;
+  right:0;
+  overflow: hidden;
+}
+/* .content {
+  height:calc(100%-93px);
+  overflow: hidden;
+  margin-top: 44px;
+} */
 </style>
