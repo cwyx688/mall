@@ -3,15 +3,21 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-
+    <tab-control
+          :titles="['流行', '新款', '精选']"
+          @itemClick="tabClick"
+          ref="tabControl1"
+          class="tabControl"
+          v-show="isTabShow"
+        ></tab-control>
   <Scroll class="content" ref="scroll" :probe-type="3" @scroll="showControl" :pull-up-load="true" @pullingUp="moreLoad">
-    <home-swiper :banners="banners"></home-swiper>
+    <home-swiper :banners="banners" @ItemImgLoad="ItemImgLoad"></home-swiper>
     <recommend-view :recommends="recommends"></recommend-view>
     <feature></feature>
     <tab-control
       :titles="['流行', '新款', '精选']"
-      class="tab-control"
       @itemClick="tabClick"
+      ref="tabControl2"
     ></tab-control>
     <goods-list :goodsList="showGoodsList"></goods-list>
   </Scroll>
@@ -33,6 +39,7 @@ import Scroll from 'components/common/scroll/Scroll.vue'
 import BackTop from 'components/content/backtop/BackTop.vue';
 
 import { getHomeMultidata, getHomeGoods } from "network/home";
+import {debounce} from 'common/utils.js'
 
 export default {
   components: {
@@ -55,7 +62,9 @@ export default {
         sell: { page: 0, list: [] }
       },
       currentType: 'pop',
-      isShowBackTop:false
+      isShowBackTop:false,
+      tabOffsetTop:0,
+      isTabShow:false
     };
   },
   created() {
@@ -63,8 +72,19 @@ export default {
     this.getHomeGoods("pop");
     this.getHomeGoods("new");
     this.getHomeGoods("sell");
+
+    
+  },
+  mounted() {
+    const refresh = debounce(this.$refs.scroll.refresh,50)
+    
+    this.$bus.$on('itemImageLoad',()=>{
+      refresh()
+      
+    })
   },
   methods: {
+    
     // 网络请求方法
     getHomeMultidata() {
       getHomeMultidata().then(res => {
@@ -78,6 +98,7 @@ export default {
       getHomeGoods(type, page).then(res => {
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
+        
         this.$refs.scroll.finishPullUp()
       });
       
@@ -95,6 +116,8 @@ export default {
           this.currentType = "sell";
           break;
       }
+      this.$refs.tabControl1.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
     },
     backClick() {
       // this.$refs.scroll.scroll.scrollTo(0,0,500)
@@ -102,10 +125,13 @@ export default {
     },
     showControl(position) {
       this.isShowBackTop = -position.y > 1000
+      this.isTabShow = -position.y > this.tabOffsetTop
     },
     moreLoad() {
       this.getHomeGoods(this.currentType)
-      this.$refs.scroll.scroll.refresh()
+    },
+    ItemImgLoad() {
+      this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop
     }
   },
   computed: {
@@ -120,22 +146,16 @@ export default {
 .home-nav {
   background-color: var(--color-tint);
   color: #fff;
-  position: fixed;
+  /* position: fixed;
   left: 0;
   right: 0;
   top: 0;
-  z-index: 1;
+  z-index: 1; */
 }
 #home {
   /* padding-top: 44px; */
   height: 100vh;
   position: relative;
-}
-.tab-control {
-  position: sticky;
-  top: 44px;
-  background-color: #fff;
-  z-index: 6;
 }
 .content {
   position:absolute;
@@ -150,4 +170,9 @@ export default {
   overflow: hidden;
   margin-top: 44px;
 } */
+.tabControl {
+  position: relative;
+  z-index: 10;
+  background-color: #fff;
+}
 </style>
