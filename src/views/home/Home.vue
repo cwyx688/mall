@@ -72,7 +72,8 @@ export default {
       isShowBackTop: false,
       tabOffsetTop: 0,
       isTabShow: false,
-      saveY: 0
+      saveY: 0,
+      itemImgListener:null
     }
   },
   activated() {
@@ -81,6 +82,9 @@ export default {
   },
   deactivated() {
     this.saveY = this.$refs.scroll.scroll.y
+
+    this.$bus.$off('itemImageLoad',this.itemImgListener)
+
   },
   created() {
     this.getHomeMultidata();
@@ -91,9 +95,10 @@ export default {
   mounted() {
     const refresh = debounce(this.$refs.scroll.refresh, 50);
 
-    this.$bus.$on("itemImageLoad", () => {
+    this.itemImgListener = () => {
       refresh();
-    });
+    }
+    this.$bus.$on("itemImageLoad", this.itemImgListener);
   },
   methods: {
     // 网络请求方法

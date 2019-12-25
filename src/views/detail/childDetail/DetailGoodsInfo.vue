@@ -28,16 +28,15 @@
     },
     methods: {
       imgLoad() {
-        if(++this.counter === this.imagesLength) {
-          this.$emit('imageLoad')
-        }
-        // this.$emit('imageLoad')
+      //   if(++this.counter === this.imagesLength) {
+      //     this.$emit('imageLoad')
+      //   }
+        this.$emit('imageLoad')
       }
-    },
-    watch:{
-      detailInfo() {
-        this.imagesLength = this.detailInfo.detailImage[0].list.length
-      }
+    // watch:{
+    //   detailInfo() {
+    //     this.imagesLength = this.detailInfo.detailImage[0].list.length
+    //   }
     }
 	}
 </script>
