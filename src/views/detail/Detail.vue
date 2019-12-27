@@ -10,6 +10,8 @@
       <detail-comment-info :comment-info="commentInfo" ref="comment" />
       <goods-list :goods-list="recommends" ref="recommend" />
     </scroll>
+    <detail-bottom-bar @addCart="addToCart"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -24,6 +26,9 @@ import DetailParamsInfo from "./childDetail/DetailParamInfo.vue";
 import DetailCommentInfo from "./childDetail/DetailCommentInfo.vue";
 
 import GoodsList from "components/content/goods/GoodsList.vue";
+
+import DetailBottomBar from './childDetail/DetailBottomBar.vue'
+
 import {
   getDetail,
   Goods,
@@ -32,10 +37,10 @@ import {
   getRecommend
 } from "network/detail.js";
 import { debounce } from "common/utils.js";
-import { itemImgListenerMixin } from "common/mixin.js";
+import { itemImgListenerMixin,backTopMixin } from "common/mixin.js";
 export default {
   name: "Detail",
-  mixins: [itemImgListenerMixin],
+  mixins: [itemImgListenerMixin,backTopMixin],
   components: {
     DetailNav,
     DetailSwiper,
@@ -45,7 +50,8 @@ export default {
     DetailGoodsInfo,
     DetailParamsInfo,
     DetailCommentInfo,
-    GoodsList
+    GoodsList,
+    DetailBottomBar,
   },
   data() {
     return {
@@ -59,7 +65,7 @@ export default {
       recommends: [],
       themeTopYs: [],
       getThemeTopY: null,
-      currentIndex:0
+      currentIndex:0,
     };
   },
   created() {
@@ -105,6 +111,8 @@ export default {
     },100);
   },
   methods: {
+    
+    
     imageLoad() {
       this.$refs.scroll.refresh();
       this.getThemeTopY();
@@ -115,6 +123,7 @@ export default {
     contenScroll(position) {
       // 1、获取y值
       const positionY = -position.y
+      this.isShowBackTop = -position.y > 1000;  //backTop混入的配合代码
       // 2、positionY和主体中值进行对比
       // [0, 7938, 9120, 9452]
       // positionY 在 0 和 7938 之间，index=0
@@ -140,6 +149,17 @@ export default {
           this.$refs.nav.currentIndex = this.currentIndex
         }
       }
+    },
+    addToCart() {
+      // 获取购物车需要展示的信息
+      const product = {}
+        product.image = this.topImages[0]
+        product.title = this.goods.title
+        product.desc = this.goods.desc
+        product.realPrice = this.goods.realPrice
+        product.iid = this.iid
+
+      this.$store.dispatch('addCart', product)
     }
   },
   mounted() {},
@@ -159,7 +179,7 @@ export default {
   height: 100vh;
 }
 .content {
-  height: calc(100% - 44px);
+  height: calc(100% - 44px - 58px);
   overflow: hidden;
 }
 .detail-nav {
