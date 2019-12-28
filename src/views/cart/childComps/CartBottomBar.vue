@@ -9,7 +9,7 @@
     合计：{{totalPrice}}
   </div>
 
-  <div class="calculate">
+  <div class="calculate" @click="caculateClick">
     去计算:({{checkLength}})
   </div>
 
@@ -70,6 +70,11 @@ import {mapGetters} from 'vuex'
         }
 
         
+      },
+      caculateClick() {
+        if(this.cartList.every(item=>item.checked===false)) {
+          this.$toast.show('请选择商品', 2000)
+        }
       }
     },
   }

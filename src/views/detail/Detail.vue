@@ -38,6 +38,10 @@ import {
 } from "network/detail.js";
 import { debounce } from "common/utils.js";
 import { itemImgListenerMixin,backTopMixin } from "common/mixin.js";
+import {mapActions} from 'vuex'
+
+
+
 export default {
   name: "Detail",
   mixins: [itemImgListenerMixin,backTopMixin],
@@ -112,7 +116,7 @@ export default {
   },
   methods: {
     
-    
+    ...mapActions(['addCart']),
     imageLoad() {
       this.$refs.scroll.refresh();
       this.getThemeTopY();
@@ -159,7 +163,18 @@ export default {
         product.realPrice = this.goods.realPrice
         product.iid = this.iid
 
-      this.$store.dispatch('addCart', product)
+      
+      // this.$store.dispatch('addCart', product).then(res=>{
+      //    this.$toast.show(res,2000)
+      //   // console.log(this.$toast);
+
+      // })
+      this.addCart(product).then(res=>{
+        this.$toast.show(res, 2000)
+        // console.dir(this.$toast);
+        // console.log(res);
+        
+      })
     }
   },
   mounted() {},
